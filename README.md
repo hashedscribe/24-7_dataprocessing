@@ -7,4 +7,5 @@ Each block is stored as a 32-bit integer. From right to left, the representation
 | 2                        | `0x02`                      | Marks if the block has a note attached to it     | #flag/revisit if there is a note, how do we point to where it is? is there just another file that stores all the notes?                                                                                  |
 | 3, 4, 5, 6, 7, 8         | `0xFC`                      | Index of the category it should be mapped to     | From 6 bits, there are 64 indices where which should be enough for general usage                                                                                                                         |
 | 9 - 32                   | `^0xFF`                     | Index of the block in relation to `START_DATE`   | Definitely does not need all the bits, but for 100 years, it requires 21 bits (3 bytes)<br>2 bytes is not nearly enough (~3.75 years)<br><br>For reference, 80 years is still 21 bits and 50 is 20 bits. |
+
 Based off of this, each block would be expressed as a 4 character ascii string put back to back. 
