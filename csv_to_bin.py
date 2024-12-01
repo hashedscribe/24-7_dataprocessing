@@ -1,3 +1,4 @@
+# ---------------------------------- IMPORTS --------------------------------- #
 import os, sys
 
 # DATETIMES
@@ -5,23 +6,35 @@ from datetime import datetime, timedelta, timezone
 from settings import DATETIME_FORMAT, KERNEL_TIME
 
 # ARCHITECTURE
-from settings import NUM_BLOCKS_PER_DAY, NUM_BLOCKS_PER_FILE
+from settings import NUM_BLOCKS_PER_DAY, NUM_BLOCKS_PER_FILE, NUM_DAYS_PER_FILE
 
 # MASKS
 from settings import MASK_WRITTEN, MASK_NOTE, MASK_CATEGORY, MASK_LINDEX
 
-def split_to_array(file, delim = "\n"):
-    return [line.split(delim) for line in file]
+# VALIDATORS 
+from validate import check_file_arr
+
+# ----------------------------- GLOBAL VARIABLES ----------------------------- #
+legend_dict = {}
+
+# --------------------------------- FUNCTIONS -------------------------------- #
+
+def file_to_array(file):
+    array = []
+    for line in file:
+        array.append(line.strip())
+    return array
 
 def parse_legend(legend_file):
-    legend_arr = split_to_array(legend_file)
+    legend_arr = file_to_array(legend_file)
     i = 0
     legend = {}
     for entry in legend_arr:
-        legend[entry[0]] = i
+        legend[entry.strip()] = i
         i += 1
     return legend
 
+# TODO needs some refining to be more modular
 def esdt_to_utc(naive_dt, is_daylight_savings = False):
     time_offset = timezone(timedelta(hours=-5))
     if(is_daylight_savings):
@@ -41,7 +54,8 @@ def get_file_index(raw_index):
 def get_local_index(raw_index):
     return raw_index % NUM_BLOCKS_PER_FILE
 
-def day_to_entries(day_string, legend_dict):
+def day_to_entries(day_string):
+    global legend_dict
     day_array = day_string.split(",")
     
     raw_index = get_raw_index(day_array[0])
@@ -57,8 +71,23 @@ def day_to_entries(day_string, legend_dict):
         
         processed_data["data"].append(local_index << 8 | category << 2 | has_note << 1 | is_written)
         local_index += 1
+     
+    return processed_data
+
+def collect_to_file_size(lines):
+    global legend_dict
+    
+    file_arr = []
+    for line in lines:
+        file_arr.append(day_to_entries(line))
+
+    check_file_arr(file_arr)
+    
+    return(file_arr)
+        
 
 def main():
+    global legend_dict
     input_file_name = input()
     legend_file_name = input()
     
@@ -67,10 +96,11 @@ def main():
     output_binary = open(os.path.join(sys.path[0], "./output/binarytest.bin"), "wb")
     
     output_binary.write(b'\x21')
-    lines = split_to_array(read_file)
+    lines = file_to_array(read_file)
     legend_dict = parse_legend(legend_file)
     
-    day_to_entries(lines[0][0], legend_dict)
+    file1 = collect_to_file_size(lines)
+    print(file1)
     
 
 if __name__ == "__main__":

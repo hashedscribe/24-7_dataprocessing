@@ -14,6 +14,7 @@ KERNEL_TIME = utc_time
 # ------------------------------- ARCHITECTURE ------------------------------- #
 NUM_BLOCKS_PER_DAY = 48
 NUM_BLOCKS_PER_FILE = 256
+NUM_DAYS_PER_FILE = NUM_BLOCKS_PER_FILE // NUM_BLOCKS_PER_DAY
 
 # ----------------------------------- MASKS ---------------------------------- #
 MASK_WRITTEN = 0x01
