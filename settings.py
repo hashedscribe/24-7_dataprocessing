@@ -26,4 +26,4 @@ MASK_CATEGORY = 0xFC
 MASK_LINDEX = ~0xFF
 
 # ----------------------------------- FILE ----------------------------------- #
-FILE_HEADER = "247_logs_"
+FILE_NAME = "247_logs_"

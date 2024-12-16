@@ -12,7 +12,7 @@ from settings import NUM_BLOCKS_PER_DAY, NUM_BLOCKS_PER_FILE, NUM_DAYS_PER_FILE
 from settings import MASK_WRITTEN, MASK_NOTE, MASK_CATEGORY, MASK_LINDEX
 
 # FILE
-from settings import FILE_HEADER
+from settings import FILE_NAME
 
 # VALIDATORS 
 from validate import check_file_arr
@@ -97,8 +97,15 @@ def write_bin(file_arr):
         print(line)
     file_index = file_arr[0]["header"]
     
-    filename = FILE_HEADER + f"{file_index:04d}"
-    output_binary = open(os.path.join(sys.path[0], "./output/binarytest.bin"), "wb")
+    filename = FILE_NAME + f"{file_index:04d}"
+    output_binary = open(os.path.join(sys.path[0], "./output/"+filename+".bin"), "wb")
+    #clear the file
+    output_binary.truncate(0)
+    output_binary.write(file_index.to_bytes(2, byteorder="little", signed=False))
+    for line in file_arr:
+        for entry in line["data"]:
+            output_binary.write(entry.to_bytes(2, byteorder="little", signed=False))
+            
 
 def main():
     global legend_dict
