@@ -3,6 +3,7 @@ import os, sys
 
 # DATETIMES
 from datetime import datetime, timedelta, timezone
+import pytz
 from settings import DATETIME_FORMAT, KERNEL_TIME
 
 # ARCHITECTURE
@@ -16,6 +17,9 @@ from settings import FILE_NAME
 
 # VALIDATORS 
 from validate import check_file_arr
+
+# DEBUGGING
+from dbg import *
 
 # ----------------------------- GLOBAL VARIABLES ----------------------------- #
 legend_dict = {}
@@ -42,16 +46,14 @@ def parse_legend(legend_file):
     return legend
 
 # TODO needs some refining to be more modular
-def esdt_to_utc(naive_dt, is_daylight_savings = False):
-    time_offset = timezone(timedelta(hours=-5))
-    if(is_daylight_savings):
-        time_offset = timezone(timedelta(hours=-4))
-    with_timezone = naive_dt.replace(tzinfo=time_offset)
-    return with_timezone.astimezone(timezone.utc)
+def to_utc(naive_dt, local_tz = pytz.timezone("America/New_York")):
+    localized_dt = local_tz.localize(naive_dt)
+    utc_dt = localized_dt.astimezone(pytz.utc)
+    return utc_dt
 
 def get_raw_index(day_string):
     # TODO find a way to check if a time is in daylight savings
-    curr_day = esdt_to_utc(datetime.strptime(day_string, DATETIME_FORMAT), True)
+    curr_day = to_utc(datetime.strptime(day_string, DATETIME_FORMAT))
     day_delta = (curr_day - KERNEL_TIME).days
     return day_delta * NUM_BLOCKS_PER_DAY
 
@@ -72,9 +74,12 @@ def day_to_entries(day_string):
     processed_data = {"header": file_index, "data": []}
     
     for entry in day_array[1:]:
-        is_written = True
+        is_written = (entry != "-")
         has_note = False
-        category = legend_dict[entry]
+        if is_written:
+            category = legend_dict[entry]
+        else:
+            category = 0
         
         processed_data["data"].append(local_index << 8 | category << 2 | has_note << 1 | is_written)
         local_index += 1
@@ -91,12 +96,9 @@ def collect_to_file_size(lines):
     return(file_arr)
 
 def write_bin(file_arr):
-    # since all the header indices are the same, this shouldn't be an issue
-    print("===========================")
-    for line in file_arr:
-        print(line)
-    file_index = file_arr[0]["header"]
+    dbg_files(file_arr)
     
+    file_index = file_arr[0]["header"]
     filename = FILE_NAME + f"{file_index:04d}"
     output_binary = open(os.path.join(sys.path[0], "./output/"+filename+".bin"), "wb")
     #clear the file
@@ -109,8 +111,8 @@ def write_bin(file_arr):
 
 def main():
     global legend_dict
-    input_file_name = input("test file name: ")
-    legend_file_name = input("legend file name: ")
+    input_file_name = input("test file: ")
+    legend_file_name = input("legend file: ")
     
     read_file = open(os.path.join(sys.path[0], "./tests/" + input_file_name + ".csv"))
     legend_file = open(os.path.join(sys.path[0], "./legends/" + legend_file_name + ".txt"))
