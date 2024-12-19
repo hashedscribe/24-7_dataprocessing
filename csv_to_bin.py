@@ -2,8 +2,7 @@
 import os, sys
 
 # DATETIMES
-from datetime import datetime, timedelta, timezone
-import pytz
+from datetime import datetime
 from settings import DATETIME_FORMAT, KERNEL_TIME
 
 # ARCHITECTURE
@@ -45,15 +44,8 @@ def parse_legend(legend_file):
         i += 1
     return legend
 
-# TODO needs some refining to be more modular
-def to_utc(naive_dt, local_tz = pytz.timezone("America/New_York")):
-    localized_dt = local_tz.localize(naive_dt)
-    utc_dt = localized_dt.astimezone(pytz.utc)
-    return utc_dt
-
 def get_raw_index(day_string):
-    # TODO find a way to check if a time is in daylight savings
-    curr_day = to_utc(datetime.strptime(day_string, DATETIME_FORMAT))
+    curr_day = datetime.strptime(day_string, DATETIME_FORMAT)
     day_delta = (curr_day - KERNEL_TIME).days
     return day_delta * NUM_BLOCKS_PER_DAY
 

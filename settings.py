@@ -2,14 +2,10 @@ from datetime import datetime, timedelta, timezone
 
 # ------------------------------- PREPROCESSING ------------------------------ #
 naive_datetime = datetime(2021, 4, 11, 0, 0, 0)
-edt_offset = timezone(timedelta(hours=-4))
-edt_time = naive_datetime.replace(tzinfo=edt_offset)
-
-utc_time = edt_time.astimezone(timezone.utc)
 
 # --------------------------------- DATETIME --------------------------------- #
 DATETIME_FORMAT = "%Y-%m-%d"
-KERNEL_TIME = utc_time
+KERNEL_TIME = naive_datetime
 
 # ------------------------------- ARCHITECTURE ------------------------------- #
 NUM_BLOCKS_PER_DAY = 48
